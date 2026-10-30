@@ -25,6 +25,7 @@ footer{text-align:center;font-size:13px;color:#777;padding-bottom:30px}
 .chip.cold{background:#e6dcf5;color:#4B0082}
 .fc{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:12px;background:#fff;border-radius:14px;padding:10px 6px;box-shadow:0 2px 8px rgba(0,0,0,.08);text-align:center}
 .fc .dy{font-size:12px;font-weight:700;color:#555}.fc .s{font-size:16px;font-weight:800;color:#1b75bb}.fc .bs{font-size:11px;color:#14a3a3}
+.wk{font-size:15px;font-weight:700;color:#1b75bb;margin:12px 2px 0;text-align:center}
 .cap{font-size:12px;color:#777;margin:8px 2px 0}
 </style></head><body>
 <div class="hero"><h1>Sarah's Japan &amp; Australia trip ✈️</h1><p id="sub">Countdown to take-off from London Heathrow · Thu 28 Jan 2027, 20:20</p>
@@ -32,6 +33,7 @@ footer{text-align:center;font-size:13px;color:#777;padding-bottom:30px}
 <section class="snow"><h2>❄️ Niseko snow watch</h2>
 <div class="sg"><div class="sb sum"><div class="lb">Summit 1,150 m</div><div class="dp" id="sd">–</div><div class="chip" id="st">–</div></div>
 <div class="sb bas"><div class="lb">Base 280 m</div><div class="dp" id="bd">–</div><div class="chip" id="bt">–</div></div></div>
+<p class="wk" id="wk"></p>
 <div class="fc" id="fc"></div>
 <p class="cap" id="cap">Loading the latest snow data…</p></section>
 <main><h2>Itinerary</h2><p class="n">All times are local.</p><div class="tl">
@@ -61,6 +63,8 @@ u();setInterval(u,1000);
 (function(){
 var U='https://api.open-meteo.com/v1/forecast?latitude=42.86&longitude=140.70&current=temperature_2m,snow_depth&daily=snowfall_sum&timezone=Asia%2FTokyo&forecast_days=7&elevation=';
 function g(e){return fetch(U+e).then(function(r){if(!r.ok)throw 0;return r.json()})}
+function f(v){v=v||0;return v>0&&v<9.95?v.toFixed(1):String(Math.round(v))}
+function t7(a){return a.reduce(function(x,y){return x+(y||0)},0)}
 function chip(el,t){el.textContent=(t<0?'\u2212'+Math.abs(t).toFixed(1):t.toFixed(1))+'\u00b0C';el.className='chip'+(t<0?' cold':'')}
 Promise.all([g(1150),g(280)]).then(function(r){var s=r[0],b=r[1];
 document.getElementById('sd').innerHTML=Math.round(s.current.snow_depth*100)+'<small> cm</small>';
@@ -68,9 +72,11 @@ document.getElementById('bd').innerHTML=Math.round(b.current.snow_depth*100)+'<s
 chip(document.getElementById('st'),s.current.temperature_2m);chip(document.getElementById('bt'),b.current.temperature_2m);
 var h='',D=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 s.daily.time.forEach(function(d,i){var w=D[new Date(d+'T12:00:00').getDay()];
-h+='<div><div class="dy">'+w+'</div><div class="s">'+Math.round(s.daily.snowfall_sum[i])+'</div><div class="bs">'+Math.round(b.daily.snowfall_sum[i])+'</div></div>'});
+h+='<div><div class="dy">'+w+'</div><div class="s">'+f(s.daily.snowfall_sum[i])+'</div><div class="bs">'+f(b.daily.snowfall_sum[i])+'</div></div>'});
 document.getElementById('fc').innerHTML=h;
-document.getElementById('cap').textContent='7-day snowfall in cm: big number = summit, small = base. Model estimates from Open-Meteo, not official resort reports. Updated '+new Date().toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' (your time).';
+var ts=t7(s.daily.snowfall_sum),tb=t7(b.daily.snowfall_sum),dep=Math.round(s.current.snow_depth*100);
+document.getElementById('wk').textContent=(ts>0||tb>0?'\u2744\ufe0f Snow due this week: '+f(ts)+' cm at the summit, '+f(tb)+' cm at the base':'No snow forecast in the next 7 days')+(dep<1?' \u00b7 no snow lying on the ground yet':'');
+document.getElementById('cap').textContent='7-day snowfall in cm: big number = summit, small = base. Model estimates from Open-Meteo, not official resort reports. Last updated '+new Date().toLocaleString('en-GB',{timeZone:'Europe/London',weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+' London time.';
 }).catch(function(){document.getElementById('cap').textContent='Snow data is unavailable right now. Please try again later.';document.getElementById('fc').style.display='none'});
 })();
 </script></body></html>
